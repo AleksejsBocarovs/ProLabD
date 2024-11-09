@@ -109,23 +109,13 @@ def calculate_diet(age, height, weight, gender=1):
                 skca += float(kal[i]) * var.varValue / 10
 
                 # Determine the price and website based on availability
-                if cenM[i] is not None and cenR[i] is not None:
-                    if safe_min(cenM[i]) > safe_min(cenR[i]):
-                        cena = cenR[i]
-                        site = saiR[i]
-                    else:
-                        cena = cenM[i]
-                        site = saiM[i]
-                elif cenM[i] is not None:  # Only cenM exists
-                    cena = cenM[i]
-                    site = saiM[i]
-                elif cenR[i] is not None:  # Only cenR exists
+                if safe_min(cenM[i]) > safe_min(cenR[i]):
                     cena = cenR[i]
                     site = saiR[i]
                 else:
-                    # Skip this entry if both cenM and cenR are None
-                    continue
-
+                    cena = cenM[i]
+                    site = saiM[i]
+                #Поидее и так будет работать,менее нагруженно ,и куча нон проверок уже встроенна в safe_min, раньше из за невнимательности я сравнивал без индекса и в этом была ошибка, проверять на два нон тоже нету смысла ведь PuLP не считает нон.    
                 results["Edienkarte"].append(
                     f"{name[i]} : {var.varValue / 10} {mer[i]} Cena: {cena} tīmekļa vietne: {site}"
                 )
