@@ -83,15 +83,28 @@ def calculate_diet(age, height, weight, gender=1):
     # Define variables
     x = [pulp.LpVariable(f"x_{i}", lowBound=0, cat="Integer") for i in range(len(records))]
 
+    #int divider (product min step), example 1kg/20=50g
+	divider=20
     # Objective function: Minimize cost
     problem += pulp.lpSum(float(cen[i]) * x[i] / 10 for i in range(len(records)))
 
     # Constraints to meet nutritional requirements
-    problem += pulp.lpSum(float(olb[i]) * x[i] / 10 for i in range(len(records))) >= norm_olb
-    problem += pulp.lpSum(float(tau[i]) * x[i] / 10 for i in range(len(records))) >= norm_tau
-    problem += pulp.lpSum(float(ogl[i]) * x[i] / 10 for i in range(len(records))) >= norm_ogl
-    problem += pulp.lpSum(float(kal[i]) * x[i] / 10 for i in range(len(records))) >= norm_kca
+    problem += pulp.lpSum(float(olb[i]) * x[i] / divider for i in range(len(records))) >= norm_olb
+    problem += pulp.lpSum(float(tau[i]) * x[i] / divider for i in range(len(records))) >= norm_tau
+    problem += pulp.lpSum(float(ogl[i]) * x[i] / divider for i in range(len(records))) >= norm_ogl
+    problem += pulp.lpSum(float(kal[i]) * x[i] / divider for i in range(len(records))) >= norm_kca
 
+    #limit on same products
+	for i in range(len(x)):
+		problem += x[i] <= 5
+
+    #Constraints to not exceed the norm too much
+	cons=1.5
+	problem += pulp.lpSum(float(olb[i]) * x[i] / divider for i in range(len(records))) <= norm_olb*cons
+	problem += pulp.lpSum(float(tau[i]) * x[i] / divider for i in range(len(records))) <= norm_tau*cons
+	problem += pulp.lpSum(float(ogl[i]) * x[i] / divider for i in range(len(records))) <= norm_ogl*cons
+	problem += pulp.lpSum(float(kal[i]) * x[i] / divider for i in range(len(records))) <= norm_kca*cons
+    
     problem.solve()
 
     # Summation variables
@@ -127,7 +140,7 @@ def calculate_diet(age, height, weight, gender=1):
                     continue
 
                 results["Edienkarte"].append(
-                    f"{name[i]} : {var.varValue / 10} {mer[i]} Cena: {cena} tīmekļa vietne: {site}"
+                    f"{name[i]} : {var.varValue / divider} {mer[i]} Cena: {cena} tīmekļa vietne: {site}"
                 )
         results["solb"] = round(solb, 2)
         results["stau"] = round(stau, 2)
